@@ -1,9 +1,13 @@
 "use client";
+
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
-export default function Payment() {
+function PaymentContent() {
   const params = useSearchParams();
   const router = useRouter();
 
@@ -24,6 +28,7 @@ export default function Payment() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-8 w-full max-w-md text-center space-y-6"
       >
+
         {/* Summary */}
         <p className="text-gray-400">
           Seats: <span className="text-white">{seats}</span>
@@ -35,7 +40,6 @@ export default function Payment() {
 
         {/* Payment Options */}
         <div className="space-y-3">
-
           <button className="w-full py-3 rounded-lg bg-white/10 hover:bg-white/20 transition">
             Pay with UPI
           </button>
@@ -47,7 +51,6 @@ export default function Payment() {
           <button className="w-full py-3 rounded-lg bg-white/10 hover:bg-white/20 transition">
             Pay with Card
           </button>
-
         </div>
 
         {/* Pay Button */}
@@ -65,3 +68,5 @@ export default function Payment() {
     </main>
   );
 }
+
+export default function Payment() {
