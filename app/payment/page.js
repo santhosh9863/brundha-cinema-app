@@ -1,18 +1,21 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-import { Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
-function PaymentContent() {
-  const params = useSearchParams();
+export default function Payment() {
   const router = useRouter();
 
-  const seats = params.get("seats") || 0;
-  const total = params.get("total") || 0;
+  const [seats, setSeats] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    setSeats(params.get("seats") || 0);
+    setTotal(params.get("total") || 0);
+  }, []);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-black via-[#0a0a0f] to-[#1a0f2e] text-white pt-24 px-6 flex flex-col items-center">
@@ -68,5 +71,3 @@ function PaymentContent() {
     </main>
   );
 }
-
-export default function Payment() {
