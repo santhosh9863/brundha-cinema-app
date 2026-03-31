@@ -26,8 +26,17 @@ html {
 /* GRADIENT TEXT */
 .gradient-text {
   background: linear-gradient(90deg, #ffd700, #a78bfa, #ffd700);
+  background-size: 200% auto;
+  animation: shine 5s linear infinite;
+  background-clip: text;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
 }
 
 /* GLOW */

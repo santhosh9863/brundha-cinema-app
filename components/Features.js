@@ -8,7 +8,7 @@ const features = [
     desc: "Immersive surround audio experience",
   },
   {
-    title: "4K Projection",
+    title: "4K Ultra  Projection",
     desc: "Ultra-clear cinematic visuals",
   },
   {
@@ -32,7 +32,7 @@ export default function Features() {
         viewport={{ once: true }}
         className="text-3xl md:text-4xl font-bold text-center mb-16"
       >
-        Why Choose Us
+        Why Choose Us ??
       </motion.h2>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
