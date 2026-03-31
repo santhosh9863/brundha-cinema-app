@@ -32,7 +32,7 @@ export default function Booking() {
         : [...prev, seat]
     );
 
-    setError("");
+    setError(""); // clear error on selection
   };
 
   const getPrice = (seat) => {
@@ -48,12 +48,10 @@ export default function Booking() {
   return (
     <main className="min-h-screen bg-black text-white pt-20 px-4 sm:px-6">
 
-      {/* TITLE */}
       <h1 className="text-2xl sm:text-3xl font-bold text-yellow-400 text-center mb-6">
         🎬 Book Your Show
       </h1>
 
-      {/* MOVIE */}
       <div className="max-w-md mx-auto mb-6 space-y-4">
         <select
           value={movie}
@@ -76,27 +74,23 @@ export default function Booking() {
         </select>
       </div>
 
-      {/* SCREEN */}
       <div className="text-center mb-6">
-        <div className="w-[90%] sm:w-2/3 mx-auto h-3 bg-gradient-to-r from-transparent via-yellow-400 to-transparent rounded-full blur-[2px]"></div>
+        <div className="w-[90%] sm:w-2/3 mx-auto h-3 bg-gradient-to-r from-transparent via-yellow-400 to-transparent rounded-full blur-[2px]" />
         <p className="text-gray-500 text-xs mt-2 tracking-widest">
           SCREEN
         </p>
       </div>
 
-      {/* SEATS */}
       <div className="flex flex-col items-center gap-3">
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div key={rowIndex} className="flex items-center gap-2">
 
-            {/* ROW LABEL */}
             <span className="text-xs text-gray-500 w-4">
               {String.fromCharCode(65 + rowIndex)}
             </span>
 
-            {/* LEFT SIDE */}
             <div className="flex gap-2">
-              {Array.from({ length: cols / 2 }).map((_, colIndex) => {
+              {Array.from({ length: cols }).map((_, colIndex) => {
                 const seat = getSeatLabel(rowIndex, colIndex);
                 const isSelected = selectedSeats.includes(seat);
                 const isBooked = bookedSeats.includes(seat);
@@ -109,48 +103,15 @@ export default function Booking() {
                     whileTap={!isBooked ? { scale: 0.9 } : {}}
                     transition={{ type: "spring", stiffness: 300, damping: 18 }}
                     className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer
-                    ${
-                      isBooked
-                        ? "bg-red-500/70 cursor-not-allowed"
-                        : isSelected
-                        ? "bg-yellow-400 text-black shadow-[0_0_18px_rgba(255,200,0,0.9)]"
-                        : "bg-white/10 hover:bg-white/20 hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]"
-                    }`}
+                      ${
+                        isBooked
+                          ? "bg-red-500/70 cursor-not-allowed"
+                          : isSelected
+                          ? "bg-yellow-400 text-black shadow-[0_0_15px_rgba(255,200,0,0.9)]"
+                          : "bg-white/10 hover:bg-white/20"
+                      }`}
                   >
                     {colIndex + 1}
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* AISLE */}
-            <div className="w-4" />
-
-            {/* RIGHT SIDE (FIXED) */}
-            <div className="flex gap-2">
-              {Array.from({ length: cols / 2 }).map((_, colIndex) => {
-                const realCol = colIndex + cols / 2;
-                const seat = getSeatLabel(rowIndex, realCol);
-                const isSelected = selectedSeats.includes(seat);
-                const isBooked = bookedSeats.includes(seat);
-
-                return (
-                  <motion.div
-                    key={seat}
-                    onClick={() => toggleSeat(seat)}
-                    whileHover={!isBooked ? { scale: 1.15 } : {}}
-                    whileTap={!isBooked ? { scale: 0.9 } : {}}
-                    transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer
-                    ${
-                      isBooked
-                        ? "bg-red-500/70 cursor-not-allowed"
-                        : isSelected
-                        ? "bg-yellow-400 text-black shadow-[0_0_18px_rgba(255,200,0,0.9)]"
-                        : "bg-white/10 hover:bg-white/20 hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]"
-                    }`}
-                  >
-                    {realCol + 1}
                   </motion.div>
                 );
               })}
@@ -160,7 +121,6 @@ export default function Booking() {
         ))}
       </div>
 
-      {/* LEGEND */}
       <div className="flex justify-center gap-6 mt-6 text-xs text-gray-400">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-white/20 rounded" />
@@ -176,11 +136,12 @@ export default function Booking() {
         </div>
       </div>
 
-      {/* SUMMARY */}
-      <div className="text-center mt-8">
+      <div className="mt-10 flex flex-col items-center text-center">
 
         <p className="text-gray-400 text-sm">
-          {selectedSeats.join(", ") || "No seats selected"}
+          {selectedSeats.length > 0
+            ? selectedSeats.join(", ")
+            : "No seats selected"}
         </p>
 
         <p className="text-yellow-400 text-xl font-bold mt-2">
@@ -188,13 +149,9 @@ export default function Booking() {
         </p>
 
         {error && (
-          <motion.p
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-red-400 text-sm mt-2"
-          >
+          <div className="mt-4 px-4 py-2 bg-red-500/20 border border-red-500 text-red-400 rounded-lg">
             {error}
-          </motion.p>
+          </div>
         )}
 
         <Button
@@ -204,6 +161,8 @@ export default function Booking() {
               setError("Please select at least one seat");
               return;
             }
+
+            setError("");
 
             setBooking({
               seats: selectedSeats,

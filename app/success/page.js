@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBooking } from "../context/BookingContext";
-import { useToast } from "../context/ToastContext";
 import Button from "../../components/ui/Button"; // ✅ BUTTON
 
 export default function Booking() {
@@ -11,7 +10,6 @@ export default function Booking() {
   const cols = 8;
   const router = useRouter();
   const { setBooking } = useBooking();
-  const { showToast } = useToast();
 
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [movie, setMovie] = useState("Leo");
@@ -181,7 +179,7 @@ export default function Booking() {
           className="mt-4"
           onClick={() => {
             if (selectedSeats.length === 0) {
-              showToast("Please select at least one seat"); // ✅ WORKS NOW
+              
               return;
             }
 
