@@ -112,22 +112,39 @@ export default function Navbar() {
 
       {/* MOBILE MENU */}
       {open && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute top-20 w-[90%] max-w-6xl px-6 py-4 rounded-2xl 
-          bg-white/5 backdrop-blur-xl border border-white/10 
-          shadow-[0_0_30px_rgba(255,200,0,0.1)] space-y-3"
-        >
-          {links.map((link) => (
-            <Link key={link.path} href={link.path}>
-              <p className="text-white/80 hover:text-yellow-400 transition">
-                {link.name}
-              </p>
-            </Link>
-          ))}
-        </motion.div>
-      )}
+  <motion.div
+    initial={{ opacity: 0, y: -10, scale: 0.98 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    transition={{ duration: 0.25 }}
+    className="absolute top-20 w-[90%] max-w-6xl px-6 py-5 rounded-2xl 
+    bg-black/60 backdrop-blur-2xl border border-white/10 
+    shadow-[0_0_40px_rgba(255,200,0,0.12)]"
+  >
+
+    <div className="flex flex-col divide-y divide-white/10">
+
+      {links.map((link) => (
+        <Link key={link.path} href={link.path}>
+          <div className="flex items-center justify-between py-3 group cursor-pointer">
+
+            {/* LEFT TEXT */}
+            <span className="text-base tracking-wide text-white/70 group-hover:text-yellow-400 transition">
+              {link.name}
+            </span>
+
+            {/* RIGHT ARROW */}
+            <span className="text-white/30 group-hover:text-yellow-400 transition transform group-hover:translate-x-1">
+              →
+            </span>
+
+          </div>
+        </Link>
+      ))}
+
+    </div>
+
+  </motion.div>
+)}
     </nav>
   );
 }
