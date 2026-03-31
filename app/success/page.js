@@ -23,8 +23,18 @@ export default function Booking() {
   const getSeatLabel = (row, col) =>
     `${String.fromCharCode(65 + row)}${col + 1}`;
 
+  // 🔥 MICRO HAPTIC (VIBRATION)
+  const vibrate = (pattern = [10]) => {
+    if (typeof window !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(pattern);
+    }
+  };
+
   const toggleSeat = (seat) => {
-    if (bookedSeats.includes(seat)) return;
+    if (bookedSeats.includes(seat)) {
+      vibrate([20, 40, 20]); // blocked vibration
+      return;
+    }
 
     setSelectedSeats((prev) =>
       prev.includes(seat)
@@ -32,6 +42,7 @@ export default function Booking() {
         : [...prev, seat]
     );
 
+    vibrate([10]); // tap feedback
     setError("");
   };
 
@@ -52,7 +63,6 @@ export default function Booking() {
         🎬 Book Your Show
       </h1>
 
-      {/* MOVIE SELECT */}
       <div className="max-w-md mx-auto mb-6 space-y-4">
         <select
           value={movie}
@@ -75,7 +85,6 @@ export default function Booking() {
         </select>
       </div>
 
-      {/* SCREEN */}
       <div className="text-center mb-6">
         <div className="w-[90%] sm:w-2/3 mx-auto h-3 bg-gradient-to-r from-transparent via-yellow-400 to-transparent rounded-full blur-[2px]" />
         <p className="text-gray-500 text-xs mt-2 tracking-widest">
@@ -83,7 +92,6 @@ export default function Booking() {
         </p>
       </div>
 
-      {/* SEATS */}
       <div className="flex flex-col items-center gap-3">
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div key={rowIndex} className="flex items-center gap-2">
@@ -103,18 +111,33 @@ export default function Booking() {
                     key={seat}
                     onClick={() => toggleSeat(seat)}
                     whileHover={!isBooked ? { scale: 1.12 } : {}}
-                    whileTap={!isBooked ? { scale: 0.92 } : {}}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    whileTap={!isBooked ? { scale: 0.88 } : {}}
+                    animate={
+                      isSelected
+                        ? { scale: [1, 1.25, 1], rotate: [0, -2, 2, 0] }
+                        : {}
+                    }
+                    transition={{ duration: 0.3 }}
                     className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer
                       ${
                         isBooked
                           ? "bg-red-500/70 cursor-not-allowed"
                           : isSelected
-                          ? "bg-yellow-400 text-black shadow-[0_0_15px_rgba(255,200,0,0.9)]"
+                          ? "bg-yellow-400 text-black shadow-[0_0_20px_rgba(255,200,0,1)]"
                           : "bg-white/10 hover:bg-white/20"
                       }`}
                   >
                     {colIndex + 1}
+
+                    {/* 🔥 RIPPLE EFFECT */}
+                    {isSelected && (
+                      <motion.span
+                        initial={{ scale: 0, opacity: 0.6 }}
+                        animate={{ scale: 2, opacity: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="absolute w-6 h-6 rounded-full bg-yellow-400/30"
+                      />
+                    )}
                   </motion.div>
                 );
               })}
@@ -124,7 +147,6 @@ export default function Booking() {
         ))}
       </div>
 
-      {/* SUMMARY */}
       <div className="text-center mt-10 flex flex-col items-center">
 
         <p className="text-gray-400 text-sm">
@@ -135,25 +157,40 @@ export default function Booking() {
           ₹{total}
         </p>
 
-        {/* 💎 PREMIUM ERROR */}
         <AnimatePresence>
           {error && (
             <motion.div
+              key="error"
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                x: [0, -6, 6, -4, 4, 0],
+              }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
-              className="mt-4 px-5 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 backdrop-blur-md shadow-[0_0_20px_rgba(255,0,0,0.15)]"
+              transition={{ duration: 0.4 }}
+              className="mt-5 px-5 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 backdrop-blur-md shadow-[0_0_25px_rgba(255,0,0,0.25)] relative overflow-hidden"
             >
-              Please select at least one seat
+              <span className="relative z-10">
+                Please select at least one seat
+              </span>
+
+              <motion.div
+                initial={{ opacity: 0.2 }}
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="absolute inset-0 bg-red-500/10 blur-xl"
+              />
             </motion.div>
           )}
         </AnimatePresence>
 
         <Button
-          className="mt-5"
+          className="mt-6"
           onClick={() => {
             if (selectedSeats.length === 0) {
+              vibrate([30, 50, 30]); // 🔥 error vibration
               setError("error");
               return;
             }
