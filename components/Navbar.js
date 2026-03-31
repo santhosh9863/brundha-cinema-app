@@ -9,43 +9,72 @@ export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const linkClass = (path) =>
-    `block py-2 ${
-      pathname === path ? "text-yellow-400" : "hover:text-yellow-400"
-    }`;
+  const links = [
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
+    { name: "Gallery", path: "/gallery" },
+    { name: "Contact", path: "/contact" },
+  ];
 
   return (
-    <nav className="fixed w-full top-0 left-0 bg-black/70 backdrop-blur-md text-white z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <nav className="fixed w-full top-0 z-50 px-4 sm:px-6 pt-3">
+
+      {/* GLASS CONTAINER */}
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-5 py-3 rounded-2xl 
+        bg-white/5 backdrop-blur-xl border border-white/10 
+        shadow-[0_0_30px_rgba(255,200,0,0.08)]">
 
         {/* LOGO */}
-        <h1 className="font-bold text-lg">🎬 Brundha Cinema</h1>
+        <h1 className="text-sm sm:text-base font-semibold tracking-wide text-white/90">
+          🎬 Brundha Cinema
+        </h1>
 
-        {/* DESKTOP MENU */}
-        <div className="hidden md:flex gap-6 text-sm">
-          <Link href="/" className={linkClass("/")}>Home</Link>
-          <Link href="/about" className={linkClass("/about")}>About</Link>
-          <Link href="/gallery" className={linkClass("/gallery")}>Gallery</Link>
-          <Link href="/contact" className={linkClass("/contact")}>Contact</Link>
+        {/* DESKTOP LINKS */}
+        <div className="hidden md:flex items-center gap-8 text-sm">
+
+          {links.map((link) => (
+            <Link key={link.path} href={link.path}>
+              <span className="relative group cursor-pointer">
+
+                {/* TEXT */}
+                <span
+                  className={`transition ${
+                    pathname === link.path
+                      ? "text-yellow-400"
+                      : "text-white/70 group-hover:text-white"
+                  }`}
+                >
+                  {link.name}
+                </span>
+
+                {/* UNDERLINE ANIMATION */}
+                <span className="absolute left-0 -bottom-1 h-[1px] w-0 bg-yellow-400 transition-all duration-300 group-hover:w-full"></span>
+              </span>
+            </Link>
+          ))}
+
         </div>
 
         {/* RIGHT SIDE */}
         <div className="flex items-center gap-3">
 
-          {/* BOOK BUTTON */}
+          {/* CTA BUTTON */}
           <Link href="/booking">
             <motion.button
               whileHover={{ scale: 1.05 }}
-              className="px-4 py-2 rounded-lg font-semibold text-black bg-gradient-to-r from-yellow-400 to-yellow-600"
+              className="relative px-4 py-2 rounded-full text-sm font-semibold text-black 
+              bg-gradient-to-r from-yellow-400 to-yellow-600 
+              shadow-[0_0_20px_rgba(255,200,0,0.4)] overflow-hidden"
             >
-              Book Now
+              <span className="relative z-10">Book</span>
+              <span className="absolute inset-0 bg-yellow-400 opacity-20 blur-xl"></span>
             </motion.button>
           </Link>
 
           {/* HAMBURGER */}
           <button
-            className="md:hidden text-xl"
             onClick={() => setOpen(!open)}
+            className="md:hidden text-lg text-white/80"
           >
             ☰
           </button>
@@ -55,11 +84,18 @@ export default function Navbar() {
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden bg-black/90 px-6 pb-4 space-y-2 text-sm">
-          <Link href="/" className={linkClass("/")}>Home</Link>
-          <Link href="/about" className={linkClass("/about")}>About</Link>
-          <Link href="/gallery" className={linkClass("/gallery")}>Gallery</Link>
-          <Link href="/contact" className={linkClass("/contact")}>Contact</Link>
+        <div className="md:hidden mt-3 mx-auto max-w-7xl px-5 py-4 rounded-2xl 
+          bg-white/5 backdrop-blur-xl border border-white/10 
+          shadow-[0_0_30px_rgba(255,200,0,0.08)] space-y-3">
+
+          {links.map((link) => (
+            <Link key={link.path} href={link.path}>
+              <p className="text-white/80 hover:text-yellow-400 transition">
+                {link.name}
+              </p>
+            </Link>
+          ))}
+
         </div>
       )}
     </nav>
