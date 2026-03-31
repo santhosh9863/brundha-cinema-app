@@ -5,8 +5,11 @@
   --foreground: #ededed;
 }
 
+/* BODY */
 body {
   font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 /* SMOOTH SCROLL */
@@ -28,8 +31,8 @@ html {
   background: linear-gradient(90deg, #ffd700, #a78bfa, #ffd700);
   background-size: 200% auto;
   animation: shine 5s linear infinite;
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
 }
 
@@ -52,12 +55,13 @@ html {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(#ffd700, #a78bfa);
   border-radius: 10px;
 }
 
-/* FIREFOX SUPPORT */
+/* FIREFOX */
 * {
   scrollbar-width: thin;
   scrollbar-color: #ffd700 #0a0a0a;

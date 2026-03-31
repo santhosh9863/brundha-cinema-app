@@ -1,98 +1,205 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useBooking } from "../context/BookingContext"; // ✅ FIXED
-import { motion } from "framer-motion";
-export default function Success() {
-  const { booking } = useBooking();
-  const router = useRouter();
+import { useBooking } from "../context/BookingContext";
+import { useToast } from "../context/ToastContext";
+import Button from "../../components/ui/Button"; // ✅ BUTTON
 
-  // 🚨 BLOCK DIRECT ACCESS
-  useEffect(() => {
-    if (!booking.paid) {
-      router.push("/booking");
-    }
-  }, [booking.paid, router]);
+export default function Booking() {
+  const rows = 5;
+  const cols = 8;
+  const router = useRouter();
+  const { setBooking } = useBooking();
+  const { showToast } = useToast();
+
+  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [movie, setMovie] = useState("Leo");
+  const [time, setTime] = useState("7:30 PM");
+
+  const bookedSeats = ["A3", "B5", "C6", "D2"];
+
+  const getSeatLabel = (row, col) =>
+    `${String.fromCharCode(65 + row)}${col + 1}`;
+
+  const toggleSeat = (seat) => {
+    if (bookedSeats.includes(seat)) return;
+
+    setSelectedSeats((prev) =>
+      prev.includes(seat)
+        ? prev.filter((s) => s !== seat)
+        : [...prev, seat]
+    );
+  };
+
+  const getPrice = (seat) => {
+    const row = seat.charCodeAt(0) - 65;
+    return row < 2 ? 150 : 250;
+  };
+
+  const total = selectedSeats.reduce(
+    (sum, seat) => sum + getPrice(seat),
+    0
+  );
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white px-4">
+    <main className="min-h-screen bg-black text-white pt-20 px-4 sm:px-6">
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="relative glass p-6 rounded-2xl w-full max-w-md text-center space-y-5 shadow-[0_0_40px_rgba(255,200,0,0.15)] overflow-hidden"
-      >
+      {/* TITLE */}
+      <h1 className="text-2xl sm:text-3xl font-bold text-yellow-400 text-center mb-6">
+        🎬 Book Your Show
+      </h1>
 
-        {/* 🎟 TOP SECTION */}
-        <div className="space-y-1">
-          <h1 className="text-lg text-yellow-400 font-semibold tracking-wide">
-            🎟 Booking Confirmed
-          </h1>
+      {/* MOVIE SELECTION */}
+      <div className="max-w-md mx-auto mb-6 space-y-4">
+        <select
+          value={movie}
+          onChange={(e) => setMovie(e.target.value)}
+          className="w-full p-3 bg-black border border-white/20 rounded"
+        >
+          <option>Leo</option>
+          <option>KGF Chapter 2</option>
+          <option>RRR</option>
+          <option>Pushpa</option>
+        </select>
 
-          <p className="text-white font-medium">
-            {booking.movie}
-          </p>
+        <select
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          className="w-full p-3 bg-black border border-white/20 rounded"
+        >
+          <option>7:30 PM</option>
+          <option>10:45 PM</option>
+        </select>
+      </div>
 
-          <p className="text-gray-400 text-sm">
-            {booking.time}
-          </p>
-        </div>
+      {/* SCREEN */}
+      <div className="text-center mb-6">
+        <div className="w-[90%] sm:w-2/3 mx-auto h-3 bg-gradient-to-r from-transparent via-yellow-400 to-transparent rounded-full blur-[2px]"></div>
+        <p className="text-gray-500 text-xs mt-2 tracking-widest">
+          SCREEN
+        </p>
+      </div>
 
-        {/* 🎫 DIVIDER */}
-        <div className="relative flex items-center justify-center my-4">
+      {/* SEATS */}
+      <div className="flex flex-col items-center gap-3">
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div key={rowIndex} className="flex items-center gap-2">
 
-          <div className="absolute left-0 w-4 h-4 bg-black rounded-full -translate-x-1/2"></div>
-          <div className="absolute right-0 w-4 h-4 bg-black rounded-full translate-x-1/2"></div>
-
-          <div className="w-full border-t border-dashed border-white/20"></div>
-        </div>
-
-        {/* 💺 DETAILS */}
-        <div className="space-y-2 text-sm text-gray-300">
-          <p>
-            Seats:{" "}
-            <span className="text-white font-semibold">
-              {booking.seats.join(", ")}
+            <span className="text-xs text-gray-500 w-4">
+              {String.fromCharCode(65 + rowIndex)}
             </span>
-          </p>
 
-          <p>
-            Total:{" "}
-            <span className="text-yellow-400 font-bold">
-              ₹{booking.total}
-            </span>
-          </p>
-        </div>
+            {/* LEFT */}
+            <div className="flex gap-2">
+              {Array.from({ length: cols / 2 }).map((_, colIndex) => {
+                const seat = getSeatLabel(rowIndex, colIndex);
+                const isSelected = selectedSeats.includes(seat);
+                const isBooked = bookedSeats.includes(seat);
 
-        {/* 🔳 PREMIUM QR */}
-        <div className="flex justify-center mt-4">
-          <div className="relative w-28 h-28 bg-white p-2 rounded-lg shadow-[0_0_25px_rgba(255,200,0,0.4)]">
-            <div className="grid grid-cols-5 gap-[2px]">
-              {Array.from({ length: 25 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-full h-full ${
-                    Math.random() > 0.5 ? "bg-black" : "bg-white"
-                  }`}
-                ></div>
-              ))}
+                return (
+                  <div
+                    key={seat}
+                    onClick={() => toggleSeat(seat)}
+                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer transition-all duration-200
+                    ${
+                      isBooked
+                        ? "bg-red-500/70 cursor-not-allowed"
+                        : isSelected
+                        ? "bg-yellow-400 text-black shadow-[0_0_12px_rgba(255,200,0,0.8)] scale-105"
+                        : "bg-white/10 hover:bg-white/20 hover:scale-105"
+                    }`}
+                  >
+                    {colIndex + 1}
+                  </div>
+                );
+              })}
             </div>
 
-            {/* subtle glow */}
-            <div className="absolute inset-0 rounded-lg shadow-[0_0_20px_rgba(255,200,0,0.3)] pointer-events-none"></div>
+            <div className="w-4" />
+
+            {/* RIGHT */}
+            <div className="flex gap-2">
+              {Array.from({ length: cols / 2 }).map((_, colIndex) => {
+                const realCol = colIndex + cols / 2;
+                const seat = getSeatLabel(rowIndex, realCol);
+                const isSelected = selectedSeats.includes(seat);
+                const isBooked = bookedSeats.includes(seat);
+
+                return (
+                  <div
+                    key={seat}
+                    onClick={() => toggleSeat(seat)}
+                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer transition-all duration-200
+                    ${
+                      isBooked
+                        ? "bg-red-500/70 cursor-not-allowed"
+                        : isSelected
+                        ? "bg-yellow-400 text-black shadow-[0_0_12px_rgba(255,200,0,0.8)] scale-105"
+                        : "bg-white/10 hover:bg-white/20 hover:scale-105"
+                    }`}
+                  >
+                    {realCol + 1}
+                  </div>
+                );
+              })}
+            </div>
+
           </div>
+        ))}
+      </div>
+
+      {/* LEGEND */}
+      <div className="flex justify-center gap-6 mt-6 text-xs text-gray-400">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-white/20 rounded" />
+          Available
         </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-yellow-400 rounded" />
+          Selected
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-red-500 rounded" />
+          Booked
+        </div>
+      </div>
 
-        {/* 🎫 BOTTOM CTA */}
-        <Link href="/">
-          <button className="w-full mt-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">
-            Back Home
-          </button>
-        </Link>
+      {/* SUMMARY */}
+      <div className="text-center mt-8">
 
-      </motion.div>
+        <p className="text-gray-400 text-sm">
+          {selectedSeats.join(", ") || "No seats selected"}
+        </p>
+
+        <p className="text-yellow-400 text-xl font-bold mt-2">
+          ₹{total}
+        </p>
+
+        {/* BUTTON */}
+        <Button
+          className="mt-4"
+          onClick={() => {
+            if (selectedSeats.length === 0) {
+              showToast("Please select at least one seat"); // ✅ WORKS NOW
+              return;
+            }
+
+            setBooking({
+              seats: selectedSeats,
+              total,
+              movie,
+              time,
+              paid: false,
+            });
+
+            router.push("/payment");
+          }}
+        >
+          Proceed to Payment
+        </Button>
+
+      </div>
 
     </main>
   );

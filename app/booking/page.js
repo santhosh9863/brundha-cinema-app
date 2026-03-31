@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBooking } from "../context/BookingContext";
 import { motion } from "framer-motion";
+import Button from "../../components/ui/Button";
 
 export default function Booking() {
   const rows = 5;
@@ -30,6 +31,8 @@ export default function Booking() {
         ? prev.filter((s) => s !== seat)
         : [...prev, seat]
     );
+
+    setError("");
   };
 
   const getPrice = (seat) => {
@@ -50,7 +53,7 @@ export default function Booking() {
         🎬 Book Your Show
       </h1>
 
-      {/* MOVIE SELECTION */}
+      {/* MOVIE */}
       <div className="max-w-md mx-auto mb-6 space-y-4">
         <select
           value={movie}
@@ -73,7 +76,7 @@ export default function Booking() {
         </select>
       </div>
 
-      {/* 🎬 SCREEN */}
+      {/* SCREEN */}
       <div className="text-center mb-6">
         <div className="w-[90%] sm:w-2/3 mx-auto h-3 bg-gradient-to-r from-transparent via-yellow-400 to-transparent rounded-full blur-[2px]"></div>
         <p className="text-gray-500 text-xs mt-2 tracking-widest">
@@ -81,16 +84,17 @@ export default function Booking() {
         </p>
       </div>
 
-      {/* 💺 SEATS */}
+      {/* SEATS */}
       <div className="flex flex-col items-center gap-3">
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div key={rowIndex} className="flex items-center gap-2">
 
+            {/* ROW LABEL */}
             <span className="text-xs text-gray-500 w-4">
               {String.fromCharCode(65 + rowIndex)}
             </span>
 
-            {/* LEFT */}
+            {/* LEFT SIDE */}
             <div className="flex gap-2">
               {Array.from({ length: cols / 2 }).map((_, colIndex) => {
                 const seat = getSeatLabel(rowIndex, colIndex);
@@ -98,27 +102,31 @@ export default function Booking() {
                 const isBooked = bookedSeats.includes(seat);
 
                 return (
-                  <div
+                  <motion.div
                     key={seat}
                     onClick={() => toggleSeat(seat)}
-                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer transition-all duration-200
+                    whileHover={!isBooked ? { scale: 1.15 } : {}}
+                    whileTap={!isBooked ? { scale: 0.9 } : {}}
+                    transition={{ type: "spring", stiffness: 300, damping: 18 }}
+                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer
                     ${
                       isBooked
                         ? "bg-red-500/70 cursor-not-allowed"
                         : isSelected
-                        ? "bg-yellow-400 text-black shadow-[0_0_12px_rgba(255,200,0,0.8)] scale-105"
-                        : "bg-white/10 hover:bg-white/20 hover:scale-105"
+                        ? "bg-yellow-400 text-black shadow-[0_0_18px_rgba(255,200,0,0.9)]"
+                        : "bg-white/10 hover:bg-white/20 hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]"
                     }`}
                   >
                     {colIndex + 1}
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
 
+            {/* AISLE */}
             <div className="w-4" />
 
-            {/* RIGHT */}
+            {/* RIGHT SIDE (FIXED) */}
             <div className="flex gap-2">
               {Array.from({ length: cols / 2 }).map((_, colIndex) => {
                 const realCol = colIndex + cols / 2;
@@ -127,20 +135,23 @@ export default function Booking() {
                 const isBooked = bookedSeats.includes(seat);
 
                 return (
-                  <div
+                  <motion.div
                     key={seat}
                     onClick={() => toggleSeat(seat)}
-                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer transition-all duration-200
+                    whileHover={!isBooked ? { scale: 1.15 } : {}}
+                    whileTap={!isBooked ? { scale: 0.9 } : {}}
+                    transition={{ type: "spring", stiffness: 300, damping: 18 }}
+                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer
                     ${
                       isBooked
                         ? "bg-red-500/70 cursor-not-allowed"
                         : isSelected
-                        ? "bg-yellow-400 text-black shadow-[0_0_12px_rgba(255,200,0,0.8)] scale-105"
-                        : "bg-white/10 hover:bg-white/20 hover:scale-105"
+                        ? "bg-yellow-400 text-black shadow-[0_0_18px_rgba(255,200,0,0.9)]"
+                        : "bg-white/10 hover:bg-white/20 hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]"
                     }`}
                   >
                     {realCol + 1}
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -149,7 +160,7 @@ export default function Booking() {
         ))}
       </div>
 
-      {/* 🎯 LEGEND */}
+      {/* LEGEND */}
       <div className="flex justify-center gap-6 mt-6 text-xs text-gray-400">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-white/20 rounded" />
@@ -165,7 +176,7 @@ export default function Booking() {
         </div>
       </div>
 
-      {/* ✅ SUMMARY (FIXED PROPERLY) */}
+      {/* SUMMARY */}
       <div className="text-center mt-8">
 
         <p className="text-gray-400 text-sm">
@@ -176,7 +187,6 @@ export default function Booking() {
           ₹{total}
         </p>
 
-        {/* 🔥 ERROR (ANIMATED + CORRECT POSITION) */}
         {error && (
           <motion.p
             initial={{ opacity: 0, y: 5 }}
@@ -187,14 +197,13 @@ export default function Booking() {
           </motion.p>
         )}
 
-        <button
+        <Button
+          className="mt-4"
           onClick={() => {
             if (selectedSeats.length === 0) {
               setError("Please select at least one seat");
               return;
             }
-
-            setError("");
 
             setBooking({
               seats: selectedSeats,
@@ -206,10 +215,9 @@ export default function Booking() {
 
             router.push("/payment");
           }}
-          className="mt-4 px-5 py-2 bg-yellow-400 text-black rounded"
         >
           Proceed to Payment
-        </button>
+        </Button>
 
       </div>
 
