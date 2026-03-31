@@ -1,17 +1,27 @@
+// 📂 app/booking/page.js (FIXED IMPORTS ONLY)
+
 "use client";
 
-import { useState } from "react";
+import { useState } from "react"; // ✅ THIS WAS MISSING
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useBooking } from "../context/BookingContext";
 
 export default function Booking() {
   const rows = 5;
   const cols = 8;
 
   const router = useRouter();
-  const [selectedSeats, setSelectedSeats] = useState([]);
+  const { setBooking } = useBooking();
 
-  const bookedSeats = ["0-2", "1-4", "2-5", "3-1"];
+  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [movie, setMovie] = useState("Leo");
+  const [time, setTime] = useState("7:30 PM");
+
+  const bookedSeats = ["A3", "B5", "C6", "D2"];
+
+  const getSeatLabel = (row, col) =>
+    `${String.fromCharCode(65 + row)}${col + 1}`;
 
   const toggleSeat = (seat) => {
     if (bookedSeats.includes(seat)) return;
@@ -24,34 +34,54 @@ export default function Booking() {
   };
 
   const getPrice = (seat) => {
-    const row = Number(seat.split("-")[0]);
+    const row = seat.charCodeAt(0) - 65;
     return row < 2 ? 150 : 250;
   };
 
-  const total = selectedSeats.reduce((sum, seat) => {
-    return sum + getPrice(seat);
-  }, 0);
+  const total = selectedSeats.reduce((sum, seat) => sum + getPrice(seat), 0);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-black via-[#0a0a0f] to-[#1a0f2e] text-white pt-24 px-6">
+    <main className="min-h-screen bg-black text-white pt-20 px-4 sm:px-6">
 
-      {/* Title */}
-      <h1 className="text-4xl font-bold text-center text-yellow-400 mb-10">
-        🎟 Select Your Seats
+      <h1 className="text-2xl sm:text-3xl font-bold text-yellow-400 text-center mb-6">
+        🎬 Book Your Show
       </h1>
 
-      {/* Screen Glow */}
-      <div className="text-center mb-10">
-        <div className="w-2/3 mx-auto h-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full shadow-[0_0_30px_rgba(255,200,0,0.6)]"></div>
-        <p className="text-gray-400 text-sm mt-2">SCREEN</p>
+      {/* Movie Selection */}
+      <div className="max-w-md mx-auto mb-6 space-y-4">
+        <select
+          value={movie}
+          onChange={(e) => setMovie(e.target.value)}
+          className="w-full p-3 bg-black border border-white/20 rounded"
+        >
+          <option>Leo</option>
+          <option>KGF Chapter 2</option>
+          <option>RRR</option>
+          <option>Pushpa</option>
+        </select>
+
+        <select
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          className="w-full p-3 bg-black border border-white/20 rounded"
+        >
+          <option>7:30 PM</option>
+          <option>10:45 PM</option>
+        </select>
+      </div>
+
+      {/* Screen */}
+      <div className="text-center mb-6">
+        <div className="w-[90%] sm:w-2/3 mx-auto h-2 bg-yellow-400 rounded"></div>
+        <p className="text-gray-400 text-xs mt-2">SCREEN</p>
       </div>
 
       {/* Seats */}
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-2">
         {Array.from({ length: rows }).map((_, rowIndex) => (
-          <div key={rowIndex} className="flex gap-4">
+          <div key={rowIndex} className="flex gap-2">
             {Array.from({ length: cols }).map((_, colIndex) => {
-              const seat = `${rowIndex}-${colIndex}`;
+              const seat = getSeatLabel(rowIndex, colIndex);
               const isSelected = selectedSeats.includes(seat);
               const isBooked = bookedSeats.includes(seat);
 
@@ -59,18 +89,16 @@ export default function Booking() {
                 <motion.div
                   key={seat}
                   onClick={() => toggleSeat(seat)}
-                  whileHover={{ scale: isBooked ? 1 : 1.15 }}
-                  whileTap={{ scale: isBooked ? 1 : 0.9 }}
-                  className={`w-10 h-10 rounded-md cursor-pointer flex items-center justify-center text-xs font-semibold transition-all duration-300
+                  className={`w-8 h-8 flex items-center justify-center text-xs rounded cursor-pointer
                     ${
                       isBooked
-                        ? "bg-red-500 cursor-not-allowed opacity-70"
+                        ? "bg-red-500 opacity-70 cursor-not-allowed"
                         : isSelected
-                        ? "bg-yellow-400 text-black shadow-[0_0_15px_rgba(255,200,0,0.8)]"
-                        : "bg-white/10 hover:bg-white/20"
+                        ? "bg-yellow-400 text-black"
+                        : "bg-white/10"
                     }`}
                 >
-                  {rowIndex + 1}
+                  {seat}
                 </motion.div>
               );
             })}
@@ -78,47 +106,37 @@ export default function Booking() {
         ))}
       </div>
 
-      {/* Legend */}
-      <div className="flex justify-center gap-8 mt-10 text-sm">
-        <span className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-white/20 rounded"></div> Available
-        </span>
-        <span className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-yellow-400 rounded"></div> Selected
-        </span>
-        <span className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-red-500 rounded"></div> Booked
-        </span>
-      </div>
-
       {/* Summary */}
-      <div className="text-center mt-12">
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-gray-400"
-        >
-          Seats Selected: {selectedSeats.length}
-        </motion.p>
+      <div className="text-center mt-8">
+        <p className="text-gray-400 text-sm">
+          {selectedSeats.join(", ") || "No seats selected"}
+        </p>
 
-        <motion.p
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          className="text-yellow-400 text-2xl font-bold mt-2"
-        >
-          Total: ₹{total}
-        </motion.p>
+        <p className="text-yellow-400 text-xl font-bold mt-2">
+          ₹{total}
+        </p>
 
-        <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() =>
-            router.push(`/payment?seats=${selectedSeats.length}&total=${total}`)
-          }
-          className="mt-6 px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-semibold rounded-lg shadow-[0_0_20px_rgba(255,200,0,0.6)]"
+        <button
+          onClick={() => {
+            if (selectedSeats.length === 0) {
+              alert("Select at least one seat");
+              return;
+            }
+
+            setBooking({
+              seats: selectedSeats,
+              total,
+              movie,
+              time,
+              paid: false,
+            });
+
+            router.push("/payment");
+          }}
+          className="mt-4 px-5 py-2 bg-yellow-400 text-black rounded"
         >
           Proceed to Payment
-        </motion.button>
+        </button>
       </div>
 
     </main>

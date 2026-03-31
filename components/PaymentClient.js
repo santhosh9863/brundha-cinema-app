@@ -2,63 +2,69 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useBooking } from "../app/context/BookingContext";
 import { motion } from "framer-motion";
 
 export default function PaymentClient() {
   const router = useRouter();
+  const { booking, setBooking } = useBooking();
 
-  const [seats, setSeats] = useState(0);
-  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
 
+  // 🚨 BLOCK DIRECT ACCESS
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    if (!booking.seats || booking.seats.length === 0) {
+      router.push("/booking");
+    }
+  }, [booking.seats, router]);
 
-    setSeats(params.get("seats") || 0);
-    setTotal(params.get("total") || 0);
-  }, []);
+  const handlePayment = () => {
+    setLoading(true);
+
+    setTimeout(() => {
+      setBooking((prev) => ({
+        ...prev,
+        paid: true,
+      }));
+
+      router.push("/success");
+    }, 2000);
+  };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-black via-[#0a0a0f] to-[#1a0f2e] text-white pt-24 px-6 flex flex-col items-center">
-
-      <h1 className="text-4xl font-bold text-yellow-400 mb-10">
-        💳 Complete Payment
-      </h1>
+    <main className="min-h-screen flex items-center justify-center bg-black text-white px-4">
 
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-8 w-full max-w-md text-center space-y-6"
+        className="glass p-6 rounded-xl w-full max-w-md text-center space-y-4"
       >
 
-        <p className="text-gray-400">
-          Seats: <span className="text-white">{seats}</span>
-        </p>
+        <h1 className="text-xl text-yellow-400 font-semibold">
+          Confirm Payment
+        </h1>
 
-        <p className="text-yellow-400 text-3xl font-bold">
-          ₹{total}
-        </p>
-
-        <div className="space-y-3">
-          <button className="w-full py-3 rounded-lg bg-white/10 hover:bg-white/20 transition">
-            Pay with UPI
-          </button>
-
-          <button className="w-full py-3 rounded-lg bg-white/10 hover:bg-white/20 transition">
-            Pay with Wallet
-          </button>
-
-          <button className="w-full py-3 rounded-lg bg-white/10 hover:bg-white/20 transition">
-            Pay with Card
-          </button>
+        {/* 🎬 Booking Info */}
+        <div className="text-sm text-gray-300 space-y-1">
+          <p className="font-semibold text-white">{booking.movie}</p>
+          <p>{booking.time}</p>
+          <p>{booking.seats?.join(", ") || "No seats"}</p>
         </div>
 
+        {/* 💰 Price */}
+        <p className="text-yellow-400 text-2xl font-bold">
+          ₹{booking.total}
+        </p>
+
+        {/* 🚀 Pay Button */}
         <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => router.push("/success")}
-          className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-semibold rounded-lg shadow-[0_0_20px_rgba(255,200,0,0.6)]"
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          onClick={handlePayment}
+          disabled={loading}
+          className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black rounded font-semibold shadow-[0_0_15px_rgba(255,200,0,0.6)]"
         >
-          Confirm Payment
+          {loading ? "Processing Payment..." : "Pay Now"}
         </motion.button>
 
       </motion.div>

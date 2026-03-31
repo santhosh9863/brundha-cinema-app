@@ -1,26 +1,60 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* SMOOTH SCROLL */
+html {
+  scroll-behavior: smooth;
+}
+
+/* GLASS EFFECT */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 20px rgba(255, 200, 0, 0.08);
+}
+
+/* GRADIENT TEXT */
+.gradient-text {
+  background: linear-gradient(90deg, #ffd700, #a78bfa, #ffd700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* GLOW */
+.glow {
+  box-shadow: 0 0 15px rgba(255, 200, 0, 0.5);
+}
+
+.glow-soft {
+  box-shadow: 0 0 25px rgba(255, 200, 0, 0.2);
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#ffd700, #a78bfa);
+  border-radius: 10px;
+}
+
+/* FIREFOX SUPPORT */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ffd700 #0a0a0a;
+}
+
+/* BUTTON SMOOTHNESS */
+button {
+  transition: all 0.25s ease;
 }
