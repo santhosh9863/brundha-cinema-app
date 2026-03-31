@@ -1,5 +1,6 @@
 "use client";
 
+import Select from "../../components/ui/Select";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBooking } from "../context/BookingContext";
@@ -32,7 +33,7 @@ export default function Booking() {
         : [...prev, seat]
     );
 
-    setError(""); // clear error on selection
+    setError("");
   };
 
   const getPrice = (seat) => {
@@ -48,32 +49,29 @@ export default function Booking() {
   return (
     <main className="min-h-screen bg-black text-white pt-20 px-4 sm:px-6">
 
+      {/* TITLE */}
       <h1 className="text-2xl sm:text-3xl font-bold text-yellow-400 text-center mb-6">
         🎬 Book Your Show
       </h1>
 
+      {/* 🎥 CUSTOM SELECTS */}
       <div className="max-w-md mx-auto mb-6 space-y-4">
-        <select
-          value={movie}
-          onChange={(e) => setMovie(e.target.value)}
-          className="w-full p-3 bg-black border border-white/20 rounded"
-        >
-          <option>Leo</option>
-          <option>KGF Chapter 2</option>
-          <option>RRR</option>
-          <option>Pushpa</option>
-        </select>
 
-        <select
+        <Select
+          value={movie}
+          onChange={setMovie}
+          options={["Leo", "KGF Chapter 2", "RRR", "Pushpa"]}
+        />
+
+        <Select
           value={time}
-          onChange={(e) => setTime(e.target.value)}
-          className="w-full p-3 bg-black border border-white/20 rounded"
-        >
-          <option>7:30 PM</option>
-          <option>10:45 PM</option>
-        </select>
+          onChange={setTime}
+          options={["7:30 PM", "10:45 PM"]}
+        />
+
       </div>
 
+      {/* SCREEN */}
       <div className="text-center mb-6">
         <div className="w-[90%] sm:w-2/3 mx-auto h-3 bg-gradient-to-r from-transparent via-yellow-400 to-transparent rounded-full blur-[2px]" />
         <p className="text-gray-500 text-xs mt-2 tracking-widest">
@@ -81,6 +79,7 @@ export default function Booking() {
         </p>
       </div>
 
+      {/* SEATS */}
       <div className="flex flex-col items-center gap-3">
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div key={rowIndex} className="flex items-center gap-2">
@@ -102,7 +101,7 @@ export default function Booking() {
                     whileHover={!isBooked ? { scale: 1.15 } : {}}
                     whileTap={!isBooked ? { scale: 0.9 } : {}}
                     transition={{ type: "spring", stiffness: 300, damping: 18 }}
-                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer
+                    className={`w-9 h-9 flex items-center justify-center text-[10px] rounded-md cursor-pointer transition-all duration-200
                       ${
                         isBooked
                           ? "bg-red-500/70 cursor-not-allowed"
@@ -121,6 +120,7 @@ export default function Booking() {
         ))}
       </div>
 
+      {/* LEGEND */}
       <div className="flex justify-center gap-6 mt-6 text-xs text-gray-400">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-white/20 rounded" />
@@ -136,6 +136,7 @@ export default function Booking() {
         </div>
       </div>
 
+      {/* SUMMARY */}
       <div className="mt-10 flex flex-col items-center text-center">
 
         <p className="text-gray-400 text-sm">
@@ -148,12 +149,18 @@ export default function Booking() {
           ₹{total}
         </p>
 
+        {/* ERROR */}
         {error && (
-          <div className="mt-4 px-4 py-2 bg-red-500/20 border border-red-500 text-red-400 rounded-lg">
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 px-4 py-2 bg-red-500/20 border border-red-500 text-red-400 rounded-lg"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
 
+        {/* BUTTON */}
         <Button
           className="mt-4"
           onClick={() => {
@@ -161,8 +168,6 @@ export default function Booking() {
               setError("Please select at least one seat");
               return;
             }
-
-            setError("");
 
             setBooking({
               seats: selectedSeats,
