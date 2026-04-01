@@ -33,6 +33,59 @@ function getPrice(seat) {
   return PRICE_MAP[type] || 150;
 }
 
+/* ─── AI Seat Recommendation ─── */
+function recommendSeats(bookedSeats, targetCount = 2) {
+  const allSeats = [];
+
+  SECTIONS.forEach((section) => {
+    const midRow = Math.floor(section.rows / 2);
+    const totalCols = section.left + section.right;
+    const midCol = totalCols / 2;
+
+    for (let r = 0; r < section.rows; r++) {
+      for (let c = 0; c < totalCols; c++) {
+        const seat = `${section.code}-${String.fromCharCode(65 + r)}${c + 1}`;
+        if (bookedSeats.includes(seat)) continue;
+
+        const rowDist = Math.abs(r - midRow) / Math.max(section.rows - 1, 1);
+        const colDist = Math.abs(c + 0.5 - midCol) / midCol;
+        const edgePenalty = (c === 0 || c === totalCols - 1) ? 0.3 : 0;
+        const score = rowDist * 0.45 + colDist * 0.4 + edgePenalty;
+
+        allSeats.push({ seat, score, section: section.code, row: r, col: c });
+      }
+    }
+  });
+
+  allSeats.sort((a, b) => a.score - b.score);
+
+  const recommended = [];
+  for (const s of allSeats) {
+    if (recommended.length >= targetCount) break;
+
+    const sameSection = recommended.filter((r) => r.section === s.section);
+    const sameRow = sameSection.filter((r) => r.row === s.row);
+
+    if (sameRow.length > 0) {
+      const adjacent = sameRow.some((r) => Math.abs(r.col - s.col) <= 2);
+      if (!adjacent && sameRow.length >= 2) continue;
+    }
+
+    recommended.push(s);
+  }
+
+  if (recommended.length < targetCount) {
+    for (const s of allSeats) {
+      if (recommended.length >= targetCount) break;
+      if (!recommended.find((r) => r.seat === s.seat)) {
+        recommended.push(s);
+      }
+    }
+  }
+
+  return recommended.slice(0, targetCount).map((s) => s.seat);
+}
+
 export default function Booking() {
   const router = useRouter();
   const { setBooking } = useBooking();
@@ -44,6 +97,9 @@ export default function Booking() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [recommendedSeats, setRecommendedSeats] = useState([]);
+  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [recommendCount, setRecommendCount] = useState(2);
 
   const isFull = bookedSeats.length >= TOTAL_SEATS;
 
@@ -56,6 +112,8 @@ export default function Booking() {
     setLoading(true);
     setBookedSeats([]);
     setSelectedSeats([]);
+    setRecommendedSeats([]);
+    setShowRecommendation(false);
     setError("");
 
     const eventSource = new EventSource(
@@ -110,6 +168,20 @@ export default function Booking() {
     [bookedSeats, isFull]
   );
 
+  const handleRecommend = useCallback(() => {
+    const seats = recommendSeats(bookedSeats, recommendCount);
+    if (seats.length === 0) {
+      setError("No available seats to recommend");
+      return;
+    }
+    setSelectedSeats(seats);
+    setRecommendedSeats(seats);
+    setShowRecommendation(true);
+    setError("");
+
+    setTimeout(() => setShowRecommendation(false), 3000);
+  }, [bookedSeats, recommendCount]);
+
   const handleProceed = async () => {
     if (selectedSeats.length === 0) {
       setError("Please select at least one seat");
@@ -153,6 +225,7 @@ export default function Booking() {
                     const seat = `${section.code}-${rowLabel}${colIndex + 1}`;
                     const isSelected = selectedSeats.includes(seat);
                     const isBooked = bookedSeats.includes(seat);
+                    const isRecommended = recommendedSeats.includes(seat) && showRecommendation;
 
                     return (
                       <motion.div
@@ -160,12 +233,31 @@ export default function Booking() {
                         onClick={() => toggleSeat(seat)}
                         whileHover={!isBooked ? { scale: 1.15 } : {}}
                         whileTap={!isBooked ? { scale: 0.9 } : {}}
+                        animate={
+                          isRecommended
+                            ? {
+                                scale: [1, 1.2, 1],
+                                boxShadow: [
+                                  "0 0 0px rgba(168,85,247,0)",
+                                  "0 0 12px rgba(168,85,247,0.6)",
+                                  "0 0 0px rgba(168,85,247,0)",
+                                ],
+                              }
+                            : {}
+                        }
+                        transition={
+                          isRecommended
+                            ? { duration: 0.6, repeat: 2, ease: "easeInOut" }
+                            : { duration: 0.2 }
+                        }
                         className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-[9px] sm:text-[10px] rounded-md cursor-pointer select-none
                           ${
                             isBooked
                               ? "bg-red-500/70 cursor-not-allowed"
                               : isSelected
                               ? "bg-yellow-400 text-black shadow-[0_0_10px_rgba(250,204,21,0.5)]"
+                              : isRecommended
+                              ? "bg-purple-400/40 border border-purple-400/60 shadow-[0_0_8px_rgba(168,85,247,0.4)]"
                               : section.code === "DIAMOND"
                               ? "bg-purple-500/30 hover:bg-purple-500/50"
                               : section.code === "GOLD"
@@ -277,8 +369,61 @@ export default function Booking() {
         </div>
       </motion.div>
 
+      {/* AI RECOMMENDATION */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mb-6"
+      >
+        <div className="flex flex-col sm:flex-row items-center gap-3 max-w-lg mx-auto">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Seats:</span>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setRecommendCount(n)}
+                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                    recommendCount === n
+                      ? "bg-yellow-400 text-black shadow-[0_0_10px_rgba(255,200,0,0.3)]"
+                      : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <motion.button
+            onClick={handleRecommend}
+            disabled={loading || isFull}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-black bg-gradient-to-r from-purple-400 to-violet-500 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] transition-shadow disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <span>✨</span>
+            Recommend Best Seats
+          </motion.button>
+        </div>
+
+        <AnimatePresence>
+          {showRecommendation && recommendedSeats.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="text-center mt-3 text-sm text-purple-300 font-medium"
+            >
+              ✨ Best {recommendedSeats.length} seats selected for you
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
       {/* LEGEND */}
-      <div className="flex justify-center gap-4 mb-6 text-xs text-gray-400">
+      <div className="flex justify-center gap-4 mb-6 text-xs text-gray-400 flex-wrap">
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-purple-500/30" />
           <span>Diamond ₹300</span>
@@ -298,6 +443,10 @@ export default function Booking() {
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-red-500/70" />
           <span>Booked</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 rounded bg-purple-400/40 border border-purple-400/60" />
+          <span>Recommended</span>
         </div>
       </div>
 
