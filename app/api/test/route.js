@@ -1,5 +1,4 @@
-import { db } from "@/lib/db";
-
+import db from "@/lib/db";
 export async function GET() {
   try {
     const [rows] = await db.execute("SELECT 1 + 1 AS result");

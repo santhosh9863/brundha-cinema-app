@@ -1,11 +1,10 @@
-import { db } from "@/lib/db";
-
+import db from "@/lib/db";
 export async function POST(req) {
   try {
     const { seat, movie, time } = await req.json();
 
     const [rows] = await db.execute(
-      "SELECT id, seats FROM bookings WHERE movie = ? AND time = ?",
+      "SELECT id, seats FROM booksings WHERE movie = ? AND time = ?",
       [movie, time]
     );
 

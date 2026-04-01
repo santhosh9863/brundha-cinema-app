@@ -100,11 +100,13 @@ export default function Booking() {
     0
   );
 
+  // 🔥 CENTERED SECTION FIX
   const renderSection = (section) => {
     return (
-      <div key={section.name} className="mb-8 sm:mb-10">
-
-        {/* SECTION TITLE */}
+      <div
+        key={section.name}
+        className="mb-8 sm:mb-10 flex flex-col items-center"
+      >
         <h2 className="text-center text-xs sm:text-sm text-gray-400 mb-3 tracking-widest">
           {section.name} ₹{section.price}
         </h2>
@@ -113,80 +115,86 @@ export default function Booking() {
           const rowLabel = String.fromCharCode(65 + rowIndex);
 
           return (
-            <div key={rowIndex} className="flex items-center gap-2 sm:gap-3 mb-2">
-
-              <span className="text-[10px] sm:text-xs text-gray-500 w-4">
+            <div
+              key={rowIndex}
+              className="flex items-center justify-center gap-2 sm:gap-3 mb-2 w-full"
+            >
+              {/* Row Label */}
+              <span className="text-[10px] sm:text-xs text-gray-500 w-4 text-center">
                 {rowLabel}
               </span>
 
-              {/* LEFT */}
-              <div className="flex gap-1 sm:gap-2">
-                {Array.from({ length: section.left }).map((_, colIndex) => {
-                  const seat = `${section.code}-${rowLabel}${colIndex + 1}`;
-                  const isSelected = selectedSeats.includes(seat);
-                  const isBooked = bookedSeats.includes(seat);
+              {/* CENTER BLOCK */}
+              <div className="flex justify-center items-center">
+                {/* LEFT */}
+                <div className="flex gap-1 sm:gap-2">
+                  {Array.from({ length: section.left }).map((_, colIndex) => {
+                    const seat = `${section.code}-${rowLabel}${colIndex + 1}`;
+                    const isSelected = selectedSeats.includes(seat);
+                    const isBooked = bookedSeats.includes(seat);
 
-                  return (
-                    <motion.div
-                      key={seat}
-                      onClick={() => toggleSeat(seat)}
-                      whileHover={!isBooked ? { scale: 1.1 } : {}}
-                      whileTap={!isBooked ? { scale: 0.9 } : {}}
-                      className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-[8px] sm:text-[10px] rounded-md
-                        ${
-                          isBooked
-                            ? "bg-red-500 cursor-not-allowed opacity-80"
-                            : isSelected
-                            ? "bg-yellow-400 text-black"
-                            : section.code === "DIAMOND"
-                            ? "bg-purple-500/30"
-                            : section.code === "GOLD"
-                            ? "bg-yellow-500/20"
-                            : "bg-white/10"
-                        }`}
-                    >
-                      {colIndex + 1}
-                    </motion.div>
-                  );
-                })}
-              </div>
+                    return (
+                      <motion.div
+                        key={seat}
+                        onClick={() => toggleSeat(seat)}
+                        whileHover={!isBooked ? { scale: 1.1 } : {}}
+                        whileTap={!isBooked ? { scale: 0.9 } : {}}
+                        className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-[8px] sm:text-[10px] rounded-md
+                          ${
+                            isBooked
+                              ? "bg-red-500 cursor-not-allowed opacity-80"
+                              : isSelected
+                              ? "bg-yellow-400 text-black"
+                              : section.code === "DIAMOND"
+                              ? "bg-purple-500/30"
+                              : section.code === "GOLD"
+                              ? "bg-yellow-500/20"
+                              : "bg-white/10"
+                          }`}
+                      >
+                        {colIndex + 1}
+                      </motion.div>
+                    );
+                  })}
+                </div>
 
-              {/* AISLE */}
-              <div className="w-2 sm:w-6" />
+                {/* AISLE */}
+                <div className="w-4 sm:w-8" />
 
-              {/* RIGHT */}
-              <div className="flex gap-1 sm:gap-2">
-                {Array.from({ length: section.right }).map((_, colIndex) => {
-                  const seat = `${section.code}-${rowLabel}${
-                    colIndex + section.left + 1
-                  }`;
+                {/* RIGHT */}
+                <div className="flex gap-1 sm:gap-2">
+                  {Array.from({ length: section.right }).map((_, colIndex) => {
+                    const seat = `${section.code}-${rowLabel}${
+                      colIndex + section.left + 1
+                    }`;
 
-                  const isSelected = selectedSeats.includes(seat);
-                  const isBooked = bookedSeats.includes(seat);
+                    const isSelected = selectedSeats.includes(seat);
+                    const isBooked = bookedSeats.includes(seat);
 
-                  return (
-                    <motion.div
-                      key={seat}
-                      onClick={() => toggleSeat(seat)}
-                      whileHover={!isBooked ? { scale: 1.1 } : {}}
-                      whileTap={!isBooked ? { scale: 0.9 } : {}}
-                      className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-[8px] sm:text-[10px] rounded-md
-                        ${
-                          isBooked
-                            ? "bg-red-500 cursor-not-allowed opacity-80"
-                            : isSelected
-                            ? "bg-yellow-400 text-black"
-                            : section.code === "DIAMOND"
-                            ? "bg-purple-500/30"
-                            : section.code === "GOLD"
-                            ? "bg-yellow-500/20"
-                            : "bg-white/10"
-                        }`}
-                    >
-                      {colIndex + section.left + 1}
-                    </motion.div>
-                  );
-                })}
+                    return (
+                      <motion.div
+                        key={seat}
+                        onClick={() => toggleSeat(seat)}
+                        whileHover={!isBooked ? { scale: 1.1 } : {}}
+                        whileTap={!isBooked ? { scale: 0.9 } : {}}
+                        className={`w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-[8px] sm:text-[10px] rounded-md
+                          ${
+                            isBooked
+                              ? "bg-red-500 cursor-not-allowed opacity-80"
+                              : isSelected
+                              ? "bg-yellow-400 text-black"
+                              : section.code === "DIAMOND"
+                              ? "bg-purple-500/30"
+                              : section.code === "GOLD"
+                              ? "bg-yellow-500/20"
+                              : "bg-white/10"
+                          }`}
+                      >
+                        {colIndex + section.left + 1}
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           );
@@ -197,7 +205,6 @@ export default function Booking() {
 
   return (
     <main className="min-h-screen bg-black text-white pt-16 sm:pt-20 px-3 sm:px-6">
-
       <h1 className="text-xl sm:text-3xl font-bold text-yellow-400 text-center mb-6">
         🎬 Book Your Show
       </h1>
@@ -255,46 +262,52 @@ export default function Booking() {
       </div>
 
       {/* SUMMARY */}
-      <div className="mt-8 text-center">
-        <p className="text-gray-400 text-xs sm:text-sm">
-          {selectedSeats.length > 0
-            ? selectedSeats.join(", ")
-            : "No seats selected"}
-        </p>
+      {/* SUMMARY */}
+<div className="mt-10 flex flex-col items-center justify-center w-full px-2">
 
-        <p className="text-yellow-400 text-lg sm:text-xl font-bold mt-2">
-          ₹{total}
-        </p>
+  <p className="text-gray-400 text-xs sm:text-sm text-center break-words max-w-[95%]">
+    {selectedSeats.length > 0
+      ? selectedSeats.join(", ")
+      : "No seats selected"}
+  </p>
 
-        {error && (
-          <div className="mt-2 text-red-400 text-xs sm:text-sm">
-            {error}
-          </div>
-        )}
+  <p className="text-yellow-400 text-lg sm:text-xl font-bold mt-2">
+    ₹{total}
+  </p>
 
-        <Button
-          className="mt-4 w-full sm:w-auto"
-          disabled={isFull}
-          onClick={() => {
-            if (selectedSeats.length === 0) {
-              setError("Please select at least one seat");
-              return;
-            }
+  {error && (
+    <div className="mt-2 text-red-400 text-xs sm:text-sm text-center">
+      {error}
+    </div>
+  )}
 
-            setBooking({
-              seats: selectedSeats,
-              total,
-              movie,
-              time,
-              paid: false,
-            });
+  {/* ✅ FIXED BUTTON */}
+  <div className="w-full max-w-md mt-4">
+    <Button
+      className="w-full py-3 text-sm sm:text-base rounded-xl"
+      disabled={isFull}
+      onClick={() => {
+        if (selectedSeats.length === 0) {
+          setError("Please select at least one seat");
+          return;
+        }
 
-            router.push("/payment");
-          }}
-        >
-          {isFull ? "Bookings Full" : "Proceed to Payment"}
-        </Button>
-      </div>
+        setBooking({
+          seats: selectedSeats,
+          total,
+          movie,
+          time,
+          paid: false,
+        });
+
+        router.push("/payment");
+      }}
+    >
+      {isFull ? "Bookings Full" : "Proceed to Payment"}
+    </Button>
+  </div>
+
+</div>
     </main>
   );
 }
