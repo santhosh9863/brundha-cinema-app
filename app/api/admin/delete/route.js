@@ -12,7 +12,6 @@ export async function POST(req) {
       );
     }
 
-    // 🔥 DELETE BOOKING
     await db.query("DELETE FROM bookings WHERE id = ?", [id]);
 
     return NextResponse.json({
