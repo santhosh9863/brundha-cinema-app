@@ -300,7 +300,7 @@ export default function Booking() {
           paid: false,
         });
 
-        router.push("/payment");
+        router.push("/success");
       }}
     >
       {isFull ? "Bookings Full" : "Proceed to Payment"}
