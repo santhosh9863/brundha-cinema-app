@@ -1,20 +1,43 @@
 import db from "@/lib/db";
 
+const VALID_MOVIES = ["Leo", "KGF Chapter 2", "RRR", "Pushpa"];
+const VALID_TIMES = ["7:30 PM", "10:45 PM"];
+
 export async function POST(req) {
   let connection;
   try {
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
     const { movie, time, seats, total, paid } = body;
 
-    if (!seats || seats.length === 0) {
+    if (!movie || typeof movie !== "string" || !VALID_MOVIES.includes(movie)) {
+      return Response.json({ error: "Invalid movie selection" }, { status: 400 });
+    }
+
+    if (!time || typeof time !== "string" || !VALID_TIMES.includes(time)) {
+      return Response.json({ error: "Invalid show time" }, { status: 400 });
+    }
+
+    if (!seats || !Array.isArray(seats) || seats.length === 0) {
       return Response.json({ error: "No seats selected" }, { status: 400 });
     }
 
-    // Get a connection from the pool for transaction
+    if (seats.length > 10) {
+      return Response.json({ error: "Maximum 10 seats per booking" }, { status: 400 });
+    }
+
+    if (!total || typeof total !== "number" || total <= 0) {
+      return Response.json({ error: "Invalid total amount" }, { status: 400 });
+    }
+
     connection = await db.getConnection();
     await connection.beginTransaction();
 
-    // Lock existing bookings for this movie+time to prevent race conditions
     const [existing] = await connection.execute(
       "SELECT id, seats FROM bookings WHERE movie = ? AND time = ? FOR UPDATE",
       [movie, time]
@@ -28,19 +51,16 @@ export async function POST(req) {
       }
     });
 
-    const conflict = seats.find((seat) =>
-      bookedSeats.includes(seat)
-    );
+    const conflicts = seats.filter((seat) => bookedSeats.includes(seat));
 
-    if (conflict) {
+    if (conflicts.length > 0) {
       await connection.rollback();
       return Response.json(
-        { error: `Seat ${conflict} already booked` },
+        { error: `Seat${conflicts.length > 1 ? "s" : ""} ${conflicts.join(", ")} already booked` },
         { status: 400 }
       );
     }
 
-    // INSERT with paid status
     await connection.execute(
       "INSERT INTO bookings (movie, time, seats, total, paid) VALUES (?, ?, ?, ?, ?)",
       [movie, time, JSON.stringify(seats), total, paid ? 1 : 0]
@@ -52,13 +72,13 @@ export async function POST(req) {
 
   } catch (err) {
     if (connection) {
-      await connection.rollback();
+      try { await connection.rollback(); } catch {}
     }
     console.error("BOOK API ERROR:", err);
-    return Response.json({ error: err.message }, { status: 500 });
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   } finally {
     if (connection) {
-      connection.release();
+      try { connection.release(); } catch {}
     }
   }
 }
