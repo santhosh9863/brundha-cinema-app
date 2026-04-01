@@ -6,7 +6,7 @@ import { useState } from "react";
 
 const images = [
   { title: "ustaad bhagath sing", src: "/images/leo.webp" },
-  { title: "KGF Chapter 2", src: "/images/kgf2.jpg" },
+  { title: "KGF Chapter 2", src: "/images/kgf2.jpg", rating: "4.5" },
   { title: "Baasha", src: "/images/baasha.jpg" },
   { title: "Pushpa", src: "/images/a.jpg" },
   { title: "GBU", src: "/images/gbu.jpg" },

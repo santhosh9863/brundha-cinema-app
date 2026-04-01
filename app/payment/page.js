@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useBooking } from "../context/BookingContext"; // ✅ FIXED
+import { useBooking } from "../context/BookingContext";
 import Button from "../../components/ui/Button";
+
 export default function PaymentClient() {
   const router = useRouter();
   const { booking, setBooking } = useBooking();
@@ -13,25 +14,32 @@ export default function PaymentClient() {
 
   // 🚫 BLOCK DIRECT ACCESS
   useEffect(() => {
-    if (!booking.seats || booking.seats.length === 0) {
+    if (!booking?.seats || booking.seats.length === 0) {
       router.push("/booking");
     }
   }, [booking, router]);
 
-  // 💳 HANDLE PAYMENT
+  // ✅ HANDLE BOOKING (NO PAYMENT API)
   const handlePayment = async () => {
+    console.log("🔥 BUTTON CLICKED");
+
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/pay", {
+      console.log("🔥 CALLING /api/book");
+
+      const res = await fetch("/api/book", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          movie: booking.movie,
+          time: booking.time,
           seats: booking.seats,
           total: booking.total,
+          paid: true,
         }),
       });
 
@@ -39,61 +47,55 @@ export default function PaymentClient() {
 
       if (!res.ok) {
         setLoading(false);
-        setError(data.message || "Payment failed");
+        setError(data.error || "Booking failed");
         return;
       }
 
-      // ✅ SUCCESS
+      console.log("✅ SAVED TO DB");
+
       setBooking((prev) => ({
         ...prev,
         paid: true,
-        transactionId: data.transactionId,
       }));
 
       router.push("/success");
 
     } catch (err) {
+      console.error(err);
       setLoading(false);
-      setError("Network error. Try again.");
+      setError("Network error");
     }
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white px-4">
-
       <div className="glass p-6 rounded-xl w-full max-w-md text-center space-y-4">
 
-        {/* TITLE */}
         <h1 className="text-xl text-yellow-400 font-semibold">
-          Confirm Payment
+          Confirm Booking
         </h1>
 
-        {/* BOOKING INFO */}
         <div className="text-sm text-gray-300 space-y-1">
-          <p className="font-semibold text-white">{booking.movie}</p>
-          <p>{booking.time}</p>
-          <p>{booking.seats?.join(", ")}</p>
+          <p className="font-semibold text-white">{booking?.movie}</p>
+          <p>{booking?.time}</p>
+          <p>{booking?.seats?.join(", ")}</p>
         </div>
 
-        {/* PRICE */}
         <p className="text-yellow-400 text-2xl font-bold">
-          ₹{booking.total}
+          ₹{booking?.total}
         </p>
 
-        {/* ERROR */}
         {error && (
           <div className="text-red-400 text-sm">
             {error}
           </div>
         )}
 
-        {/* BUTTON */}
         <Button onClick={handlePayment} loading={loading}>
-          {loading ? "Processing..." : "Pay Now"}
+          {loading ? "Processing..." : "Confirm Booking"}
         </Button>
 
       </div>
-
     </main>
   );
 }

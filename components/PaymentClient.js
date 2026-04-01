@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useBooking } from "../context/BookingContext"; // ✅ FIXED
+import { useBooking } from "../context/BookingContext";
 import Button from "./ui/Button";
 
 export default function PaymentClient() {
@@ -12,27 +12,30 @@ export default function PaymentClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 🚫 BLOCK DIRECT ACCESS
   useEffect(() => {
     if (!booking?.seats || booking.seats.length === 0) {
       router.push("/booking");
     }
   }, [booking, router]);
 
-  // 💳 HANDLE PAYMENT
   const handlePayment = async () => {
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/pay", {
+      console.log("🔥 BOOKING ONLY MODE");
+
+      const res = await fetch("/api/book", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          movie: booking.movie,
+          time: booking.time,
           seats: booking.seats,
           total: booking.total,
+          paid: true,
         }),
       });
 
@@ -40,32 +43,32 @@ export default function PaymentClient() {
 
       if (!res.ok) {
         setLoading(false);
-        setError(data.message || "Payment failed");
+        setError(data.error || "Booking failed");
         return;
       }
 
-      // ✅ SUCCESS
+      console.log("✅ SAVED TO DB");
+
       setBooking((prev) => ({
         ...prev,
         paid: true,
-        transactionId: data.transactionId,
       }));
 
       router.push("/success");
 
     } catch (err) {
+      console.error(err);
       setLoading(false);
-      setError("Network error. Try again.");
+      setError("Network error");
     }
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white px-4">
-
       <div className="glass p-6 rounded-xl w-full max-w-md text-center space-y-4">
 
         <h1 className="text-xl text-yellow-400 font-semibold">
-          Confirm Payment
+          Confirm Booking
         </h1>
 
         <div className="text-sm text-gray-300 space-y-1">
@@ -85,11 +88,10 @@ export default function PaymentClient() {
         )}
 
         <Button onClick={handlePayment} loading={loading}>
-          {loading ? "Processing..." : "Pay Now"}
+          {loading ? "Processing..." : "Confirm Booking"}
         </Button>
 
       </div>
-
     </main>
   );
 }
