@@ -1,4 +1,5 @@
-import db from "@/lib/db";
+import { NextResponse } from "next/server";
+import { query } from "@/lib/db";
 
 export async function GET(req) {
   try {
@@ -7,10 +8,10 @@ export async function GET(req) {
     const time = searchParams.get("time");
 
     if (!movie || !time) {
-      return Response.json({ error: "Missing movie or time parameter" }, { status: 400 });
+      return NextResponse.json({ error: "Missing movie or time parameter" }, { status: 400 });
     }
 
-    const [rows] = await db.execute(
+    const rows = await query(
       "SELECT seats FROM bookings WHERE movie = ? AND time = ?",
       [movie, time]
     );
@@ -23,9 +24,9 @@ export async function GET(req) {
       }
     });
 
-    return Response.json({ bookedSeats });
+    return NextResponse.json({ bookedSeats });
   } catch (err) {
     console.error("SEATS API ERROR:", err);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

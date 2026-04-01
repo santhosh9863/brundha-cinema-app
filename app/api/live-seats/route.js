@@ -1,4 +1,5 @@
-import db from "@/lib/db";
+import { query } from "@/lib/db";
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const movie = searchParams.get("movie");
@@ -6,28 +7,33 @@ export async function GET(req) {
 
   const stream = new ReadableStream({
     async start(controller) {
+      const encoder = new TextEncoder();
 
       const sendData = async () => {
-        const [rows] = await db.execute(
-          "SELECT seats FROM bookings WHERE movie = ? AND time = ?",
-          [movie, time]
-        );
+        try {
+          const rows = await query(
+            "SELECT seats FROM bookings WHERE movie = ? AND time = ?",
+            [movie, time]
+          );
 
-        const bookedSeats = rows.flatMap((row) =>
-          JSON.parse(row.seats)
-        );
+          const bookedSeats = rows.flatMap((row) => {
+            try {
+              return JSON.parse(row.seats || "[]");
+            } catch {
+              return [];
+            }
+          });
 
-        controller.enqueue(
-          new TextEncoder().encode(
-            `data: ${JSON.stringify(bookedSeats)}\n\n`
-          )
-        );
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(bookedSeats)}\n\n`)
+          );
+        } catch (err) {
+          console.error("SSE send error:", err);
+        }
       };
 
-      // 🔥 SEND FIRST DATA
       await sendData();
 
-      // 🔥 PUSH UPDATES EVERY 1 SEC (NEAR REALTIME)
       const interval = setInterval(sendData, 1000);
 
       return () => clearInterval(interval);
