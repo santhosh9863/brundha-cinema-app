@@ -11,22 +11,14 @@ export default function Success() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!booking.paid) {
-      router.push("/booking");
-    }
-
-    // 🔊 SUCCESS SOUND
-    const audio = new Audio(
-      "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"
-    );
-    audio.volume = 0.4;
-    audio.play().catch(() => {});
-
-    // 📳 HAPTIC
-    if (navigator.vibrate) {
-      navigator.vibrate([80, 40, 80]);
-    }
-  }, []);
+  if (
+    !booking.paid ||
+    !booking.seats ||
+    booking.seats.length === 0
+  ) {
+    router.push("/booking");
+  }
+}, []);
 
   const qrValue = JSON.stringify({
     movie: booking.movie,

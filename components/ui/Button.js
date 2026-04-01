@@ -2,7 +2,8 @@
 
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useRef } from "react";
-import { useSound } from "../SoundProvider";
+
+// ❌ removed useSound (unstable)
 
 export default function Button({
   children,
@@ -13,7 +14,6 @@ export default function Button({
   disabled = false,
 }) {
   const ref = useRef(null);
-  const { play } = useSound();
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -22,6 +22,8 @@ export default function Button({
   const smoothY = useSpring(y, { stiffness: 150, damping: 12 });
 
   const handleMouseMove = (e) => {
+    if (!ref.current) return;
+
     const rect = ref.current.getBoundingClientRect();
     const dx = e.clientX - (rect.left + rect.width / 2);
     const dy = e.clientY - (rect.top + rect.height / 2);
@@ -37,8 +39,6 @@ export default function Button({
 
   const handleClick = () => {
     if (disabled || loading) return;
-
-    play("click");
     onClick && onClick();
   };
 
@@ -66,9 +66,9 @@ export default function Button({
         disabled ? "opacity-40 cursor-not-allowed" : ""
       }`}
     >
-      {loading ? "Loading..." : children}
+      {loading ? "Processing..." : children}
 
-      {/* glow sweep */}
+      {/* glow effect */}
       <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 hover:opacity-100 transition duration-500 blur-md" />
     </motion.button>
   );

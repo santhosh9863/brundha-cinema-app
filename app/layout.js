@@ -11,7 +11,8 @@ import { usePathname } from "next/navigation";
 import { BookingProvider } from "./context/BookingContext";
 import { SoundProvider } from "../components/SoundProvider"; // ✅ NEW
 import { useState, useEffect } from "react";
-
+import Spotlight from "../components/Spotlight";
+import Particles from "../components/Particles";
 export default function RootLayout({ children }) {
   const pathname = usePathname();
   const [loading, setLoading] = useState(false);
@@ -28,33 +29,38 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="bg-black text-white overflow-x-hidden">
 
-        <BookingProvider>
-          <SoundProvider> {/* 🔥 WRAPPED */}
+  <BookingProvider>
+    <SoundProvider>
 
-            {loading && <Loader />}
+      {loading && <Loader />}
 
-            <ParallaxBackground />
-            <CursorGlow />
-            <Navbar />
+      {/* 🔥 BACKGROUND LAYERS FIRST */}
+      <ParallaxBackground />
+      <Particles />
+      <Spotlight />
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={pathname}
-                initial={{ opacity: 0, y: 20, scale: 0.98, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -20, scale: 0.98, filter: "blur(8px)" }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="pt-16 sm:pt-20"
-              >
-                {children}
-                <Footer />
-              </motion.div>
-            </AnimatePresence>
+      {/* UI */}
+      <CursorGlow />
+      <Navbar />
 
-          </SoundProvider>
-        </BookingProvider>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0, y: 20, scale: 0.98, filter: "blur(8px)" }}
+          animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -20, scale: 0.98, filter: "blur(8px)" }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+          className="pt-16 sm:pt-20 relative z-10"
+        >
+          {children}
+          <Footer />
+        </motion.div>
+      </AnimatePresence>
 
-      </body>
+    </SoundProvider>
+  </BookingProvider>
+
+</body>
     </html>
   );
 }
