@@ -2,9 +2,6 @@
 
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useRef } from "react";
-
-// ❌ removed useSound (unstable)
-
 export default function Button({
   children,
   onClick,

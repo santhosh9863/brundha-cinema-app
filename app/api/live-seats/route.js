@@ -5,6 +5,8 @@ export async function GET(req) {
   const movie = searchParams.get("movie");
   const time = searchParams.get("time");
 
+  let interval;
+
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
@@ -28,15 +30,19 @@ export async function GET(req) {
             encoder.encode(`data: ${JSON.stringify(bookedSeats)}\n\n`)
           );
         } catch (err) {
-          console.error("SSE send error:", err);
+          console.error("SSE error:", err);
         }
       };
 
+      // initial send
       await sendData();
 
-      const interval = setInterval(sendData, 1000);
+      // repeat
+      interval = setInterval(sendData, 1000);
+    },
 
-      return () => clearInterval(interval);
+    cancel() {
+      if (interval) clearInterval(interval);
     },
   });
 

@@ -8,13 +8,18 @@ export async function GET() {
     let revenue = 0;
     let seatsSold = 0;
     let todayBookings = 0;
+
+    const now = new Date();
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+
     const movieMap = {};
     const timeMap = {};
 
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    for (const b of rows) {
+    rows.forEach((b) => {
       const total = Number(b.total) || 0;
       revenue += total;
 
@@ -35,22 +40,39 @@ export async function GET() {
 
       const timeName = b.time || "Unknown";
       timeMap[timeName] = (timeMap[timeName] || 0) + 1;
-    }
+    });
+
+    const movies = Object.entries(movieMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const times = Object.entries(timeMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const activeShows = new Set(rows.map((b) => b.time)).size;
 
     return NextResponse.json({
       totalBookings: rows.length,
       revenue,
       seatsSold,
       todayBookings,
-      activeShows: Object.keys(timeMap).length,
-      movies: Object.entries(movieMap).map(([name, count]) => ({ name, count })),
-      times: Object.entries(timeMap).map(([name, count]) => ({ name, count })),
+      activeShows,
+      movies,
+      times,
     });
+
   } catch (err) {
     console.error("ANALYTICS API ERROR:", err);
+
     return NextResponse.json({
-      totalBookings: 0, revenue: 0, seatsSold: 0,
-      todayBookings: 0, activeShows: 0, movies: [], times: [],
+      totalBookings: 0,
+      revenue: 0,
+      seatsSold: 0,
+      todayBookings: 0,
+      activeShows: 0,
+      movies: [],
+      times: [],
     });
   }
 }

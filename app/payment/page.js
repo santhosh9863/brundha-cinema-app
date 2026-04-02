@@ -7,10 +7,21 @@ import Button from "../../components/ui/Button";
 
 export default function PaymentClient() {
   const router = useRouter();
-  const { booking, setBooking } = useBooking();
+  const bookingContext = useBooking();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // ✅ HARD FIX FOR YOUR CRASH
+  if (!bookingContext || !bookingContext.booking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        Loading booking...
+      </div>
+    );
+  }
+
+  const { booking, setBooking } = bookingContext;
 
   // 🚫 BLOCK DIRECT ACCESS
   useEffect(() => {
@@ -19,16 +30,11 @@ export default function PaymentClient() {
     }
   }, [booking, router]);
 
-  // ✅ HANDLE BOOKING (NO PAYMENT API)
   const handlePayment = async () => {
-    console.log("🔥 BUTTON CLICKED");
-
     setLoading(true);
     setError("");
 
     try {
-      console.log("🔥 CALLING /api/book");
-
       const res = await fetch("/api/book", {
         method: "POST",
         headers: {
@@ -46,12 +52,10 @@ export default function PaymentClient() {
       const data = await res.json();
 
       if (!res.ok) {
-        setLoading(false);
         setError(data.error || "Booking failed");
+        setLoading(false);
         return;
       }
-
-      console.log("✅ SAVED TO DB");
 
       setBooking((prev) => ({
         ...prev,
@@ -59,42 +63,36 @@ export default function PaymentClient() {
       }));
 
       router.push("/success");
-
     } catch (err) {
-      console.error(err);
-      setLoading(false);
       setError("Network error");
+      setLoading(false);
     }
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-black text-white px-4">
       <div className="glass p-6 rounded-xl w-full max-w-md text-center space-y-4">
-
         <h1 className="text-xl text-yellow-400 font-semibold">
           Confirm Booking
         </h1>
 
         <div className="text-sm text-gray-300 space-y-1">
-          <p className="font-semibold text-white">{booking?.movie}</p>
-          <p>{booking?.time}</p>
-          <p>{booking?.seats?.join(", ")}</p>
+          <p className="font-semibold text-white">{booking.movie}</p>
+          <p>{booking.time}</p>
+          <p>{booking.seats.join(", ")}</p>
         </div>
 
         <p className="text-yellow-400 text-2xl font-bold">
-          ₹{booking?.total}
+          ₹{booking.total}
         </p>
 
         {error && (
-          <div className="text-red-400 text-sm">
-            {error}
-          </div>
+          <div className="text-red-400 text-sm">{error}</div>
         )}
 
         <Button onClick={handlePayment} loading={loading}>
           {loading ? "Processing..." : "Confirm Booking"}
         </Button>
-
       </div>
     </main>
   );

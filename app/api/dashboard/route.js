@@ -46,11 +46,8 @@ export async function GET() {
       movies: Object.entries(movieMap).map(([name, count]) => ({ name, count })),
       times: Object.entries(timeMap).map(([name, count]) => ({ name, count })),
     });
-  } catch (err) {
-    console.error("ANALYTICS API ERROR:", err);
-    return NextResponse.json({
-      totalBookings: 0, revenue: 0, seatsSold: 0,
-      todayBookings: 0, activeShows: 0, movies: [], times: [],
-    });
+  } catch (error) {
+    console.error("DASHBOARD API ERROR:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
